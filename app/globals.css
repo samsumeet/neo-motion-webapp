@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --background: #eef6fb;
+  --foreground: #0f172a;
+  --muted-foreground: #5f6b7f;
+  --primary: #0f766e;
+  --primary-strong: #115e59;
+  --primary-foreground: #f8fafc;
+  --card: rgba(255, 255, 255, 0.78);
+  --ring: #0ea5e9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(125, 211, 252, 0.32), transparent 28%),
+    radial-gradient(circle at top right, rgba(45, 212, 191, 0.18), transparent 24%),
+    linear-gradient(180deg, #f8fbff 0%, #eef6fb 52%, #e9f2f8 100%);
+  color: var(--foreground);
+  font-feature-settings: "ss01" 1, "cv02" 1, "cv11" 1;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.14), transparent 70%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(14, 165, 233, 0.18);
+}
+
+.font-serif {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.48);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
