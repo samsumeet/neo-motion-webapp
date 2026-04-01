@@ -37,6 +37,7 @@ import type { AppointmentDocument, AppointmentStatus } from "@/types/appointment
 
 type DashboardShellProps = {
   appointments: AppointmentDocument[];
+  referenceDate: string;
 };
 
 const sectionVariant = {
@@ -44,8 +45,9 @@ const sectionVariant = {
   visible: { opacity: 1, y: 0 }
 };
 
-export function DashboardShell({ appointments }: DashboardShellProps) {
+export function DashboardShell({ appointments, referenceDate }: DashboardShellProps) {
   const router = useRouter();
+  const reference = new Date(referenceDate);
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
@@ -70,18 +72,18 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
       matchesService(appointment, serviceFilter)
   );
   const filteredAppointments = analyticsAppointments.filter((appointment) =>
-    matchesStatus(appointment, appointmentsTab)
+    matchesStatus(appointment, appointmentsTab, reference)
   );
 
   const totalAppointments = analyticsAppointments.length;
   const todaysAppointments = analyticsAppointments.filter(
-    (appointment) => matchesStatus(appointment, "today")
+    (appointment) => matchesStatus(appointment, "today", reference)
   ).length;
   const upcomingAppointments = analyticsAppointments.filter(
-    (appointment) => matchesStatus(appointment, "upcoming")
+    (appointment) => matchesStatus(appointment, "upcoming", reference)
   ).length;
   const pastAppointments = analyticsAppointments.filter(
-    (appointment) => matchesStatus(appointment, "past")
+    (appointment) => matchesStatus(appointment, "past", reference)
   ).length;
   const servicesData = groupAppointmentsByService(analyticsAppointments).slice(0, 6);
   const appointmentsByTime =
@@ -157,7 +159,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
   return (
     <>
       <div
-        className="relative"
+        className="relative overflow-x-clip"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -187,7 +189,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
         </div>
 
         <div
-          className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 transition-transform duration-200 sm:px-6 lg:px-8 lg:py-8"
+          className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-6 px-4 py-6 transition-transform duration-200 sm:px-6 lg:px-8 lg:py-8"
           style={{
             transform:
               pullDistance > 0 || isRefreshing
@@ -282,10 +284,10 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
             title="Appointments"
             subtitle={`${filteredAppointments.length} ${appointmentsTab === "today" ? "appointments today" : "future appointments"}`}
             actions={
-              <div className="flex items-center gap-3">
-                <div className="flex rounded-full bg-slate-100 p-1">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex max-w-full rounded-full bg-slate-100 p-1">
                   <button
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    className={`rounded-full px-2.5 py-1.5 text-xs font-semibold sm:px-3 ${
                       appointmentsTab === "today"
                         ? "bg-white text-slate-950 shadow-sm"
                         : "text-slate-500"
@@ -295,7 +297,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
                     Today
                   </button>
                   <button
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    className={`rounded-full px-2.5 py-1.5 text-xs font-semibold sm:px-3 ${
                       appointmentsTab === "upcoming"
                         ? "bg-white text-slate-950 shadow-sm"
                         : "text-slate-500"
@@ -376,7 +378,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
                       <Clock3 className="size-3.5" />
                       {appointment.time}
                     </span>
-                    {isRecentAppointment(appointment) ? (
+                    {isRecentAppointment(appointment, reference) ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-emerald-700">
                         <Activity className="size-3.5" />
                         New
@@ -406,9 +408,9 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
             title="Appointment trend"
             subtitle="Track booking flow by day or week."
             actions={
-              <div className="flex rounded-full bg-slate-100 p-1">
+              <div className="flex max-w-full rounded-full bg-slate-100 p-1">
                 <button
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  className={`rounded-full px-2.5 py-1.5 text-xs font-semibold sm:px-3 ${
                     chartGranularity === "daily"
                       ? "bg-white text-slate-950 shadow-sm"
                       : "text-slate-500"
@@ -418,7 +420,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
                   Daily
                 </button>
                 <button
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  className={`rounded-full px-2.5 py-1.5 text-xs font-semibold sm:px-3 ${
                     chartGranularity === "weekly"
                       ? "bg-white text-slate-950 shadow-sm"
                       : "text-slate-500"
@@ -458,6 +460,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
 
       <AppointmentDetailSheet
         appointment={selectedAppointment}
+        referenceDate={referenceDate}
         onOpenChange={(open) => {
           if (!open) {
             setSelectedAppointment(null);

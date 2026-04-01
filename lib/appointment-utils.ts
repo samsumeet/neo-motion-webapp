@@ -75,13 +75,14 @@ export function matchesService(
 
 export function matchesStatus(
   appointment: AppointmentDocument,
-  status: AppointmentStatus
+  status: AppointmentStatus,
+  reference = new Date()
 ) {
   if (status === "all") {
     return true;
   }
 
-  return getAppointmentStatus(appointment) === status;
+  return getAppointmentStatus(appointment, reference) === status;
 }
 
 export function groupAppointmentsByService(appointments: AppointmentDocument[]) {

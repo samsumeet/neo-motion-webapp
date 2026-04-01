@@ -22,11 +22,12 @@ import type { AppointmentDocument } from "@/types/appointment";
 
 type AppointmentDetailSheetProps = {
   appointment: AppointmentDocument | null;
+  referenceDate: string;
   onOpenChange: (open: boolean) => void;
 };
 
-function statusVariant(appointment: AppointmentDocument) {
-  const status = getAppointmentStatus(appointment);
+function statusVariant(appointment: AppointmentDocument, referenceDate: string) {
+  const status = getAppointmentStatus(appointment, new Date(referenceDate));
 
   if (status === "today") {
     return "warning";
@@ -41,6 +42,7 @@ function statusVariant(appointment: AppointmentDocument) {
 
 export function AppointmentDetailSheet({
   appointment,
+  referenceDate,
   onOpenChange
 }: AppointmentDetailSheetProps) {
   return (
@@ -51,8 +53,8 @@ export function AppointmentDetailSheet({
             <DialogHeader>
               <div className="flex flex-wrap items-center gap-3">
                 <DialogTitle>{appointment.name}</DialogTitle>
-                <Badge variant={statusVariant(appointment)}>
-                  {getAppointmentStatus(appointment)}
+                <Badge variant={statusVariant(appointment, referenceDate)}>
+                  {getAppointmentStatus(appointment, new Date(referenceDate))}
                 </Badge>
               </div>
               <DialogDescription>

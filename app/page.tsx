@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const appointments = await getAppointments();
+  const referenceDate = new Date().toISOString();
 
-  return <DashboardShell appointments={appointments} />;
+  return <DashboardShell appointments={appointments} referenceDate={referenceDate} />;
 }

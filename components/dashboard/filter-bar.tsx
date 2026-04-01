@@ -24,7 +24,7 @@ export function FilterBar({
   onServiceChange
 }: FilterBarProps) {
   return (
-    <div className="grid gap-2 md:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,0.8fr))]">
+    <div className="grid min-w-0 gap-2 md:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,0.8fr))]">
       <label className="relative block">
         <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
         <Input
@@ -35,7 +35,7 @@ export function FilterBar({
         />
       </label>
 
-      <label className="rounded-xl border border-white/65 bg-white/80 px-3 shadow-sm">
+      <label className="min-w-0 rounded-xl border border-white/65 bg-white/80 px-3 shadow-sm">
         <span className="mb-1 block pt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
           Date
         </span>
@@ -47,7 +47,7 @@ export function FilterBar({
         />
       </label>
 
-      <label className="rounded-xl border border-white/65 bg-white/80 px-3 shadow-sm">
+      <label className="min-w-0 rounded-xl border border-white/65 bg-white/80 px-3 shadow-sm">
         <span className="mb-1 block pt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
           Service
         </span>

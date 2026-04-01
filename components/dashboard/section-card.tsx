@@ -21,13 +21,13 @@ export function SectionCard({
   contentClassName
 }: SectionCardProps) {
   return (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div>
+    <Card className={cn("min-w-0 overflow-hidden", className)}>
+      <CardHeader className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           <CardTitle>{title}</CardTitle>
           {subtitle ? <p className="mt-1 text-sm text-[var(--muted-foreground)]">{subtitle}</p> : null}
         </div>
-        {actions}
+        {actions ? <div className="min-w-0">{actions}</div> : null}
       </CardHeader>
       <CardContent className={cn("pt-0", contentClassName)}>{children}</CardContent>
     </Card>
