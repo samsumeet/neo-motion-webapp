@@ -1,14 +1,16 @@
 "use client";
 
-import { useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
   CalendarDays,
   ChevronRight,
   Clock3,
+  RefreshCw,
   Sparkles
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { AppointmentCards } from "@/components/dashboard/appointment-cards";
 import { AppointmentDetailSheet } from "@/components/dashboard/appointment-detail-sheet";
@@ -43,6 +45,7 @@ const sectionVariant = {
 };
 
 export function DashboardShell({ appointments }: DashboardShellProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
@@ -50,6 +53,13 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
   const [chartGranularity, setChartGranularity] = useState<"daily" | "weekly">("daily");
   const [selectedAppointment, setSelectedAppointment] =
     useState<AppointmentDocument | null>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullStartY = useRef<number | null>(null);
+  const isPulling = useRef(false);
+
+  const maxPullDistance = 96;
+  const refreshThreshold = 72;
 
   const deferredQuery = useDeferredValue(query);
   const services = [...new Set(appointments.map((appointment) => appointment.service))].sort();
@@ -82,9 +92,109 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
     .slice(0, 5);
 
+  const refreshDashboard = () => {
+    if (isRefreshing) {
+      return;
+    }
+
+    setIsRefreshing(true);
+
+    startTransition(() => {
+      router.refresh();
+    });
+
+    window.setTimeout(() => {
+      setPullDistance(0);
+      setIsRefreshing(false);
+    }, 900);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (window.scrollY > 0 || isRefreshing) {
+      pullStartY.current = null;
+      isPulling.current = false;
+      return;
+    }
+
+    pullStartY.current = event.touches[0]?.clientY ?? null;
+    isPulling.current = true;
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!isPulling.current || pullStartY.current === null || isRefreshing) {
+      return;
+    }
+
+    const currentY = event.touches[0]?.clientY ?? pullStartY.current;
+    const delta = currentY - pullStartY.current;
+
+    if (delta <= 0 || window.scrollY > 0) {
+      setPullDistance(0);
+      return;
+    }
+
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+
+    setPullDistance(Math.min(maxPullDistance, delta * 0.55));
+  };
+
+  const handleTouchEnd = () => {
+    const shouldRefresh = pullDistance >= refreshThreshold;
+
+    pullStartY.current = null;
+    isPulling.current = false;
+
+    if (shouldRefresh) {
+      refreshDashboard();
+      return;
+    }
+
+    setPullDistance(0);
+  };
+
   return (
     <>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div
+        className="relative"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+      >
+        <div className="pointer-events-none sticky top-3 z-40 flex justify-center px-4">
+          <div
+            className={`flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-4 py-2 text-xs font-semibold text-slate-600 shadow-[0_14px_30px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-200 ${
+              pullDistance > 0 || isRefreshing
+                ? "translate-y-0 opacity-100"
+                : "-translate-y-6 opacity-0"
+            }`}
+          >
+            <RefreshCw
+              className={`size-4 ${
+                isRefreshing || pullDistance >= refreshThreshold ? "animate-spin" : ""
+              }`}
+            />
+            <span>
+              {isRefreshing
+                ? "Refreshing appointments..."
+                : pullDistance >= refreshThreshold
+                  ? "Release to refresh"
+                  : "Pull to refresh"}
+            </span>
+          </div>
+        </div>
+
+        <div
+          className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 transition-transform duration-200 sm:px-6 lg:px-8 lg:py-8"
+          style={{
+            transform:
+              pullDistance > 0 || isRefreshing
+                ? `translateY(${Math.min(42, pullDistance * 0.45)}px)`
+                : "translateY(0px)"
+          }}
+        >
         <motion.section
           initial="hidden"
           animate="visible"
@@ -343,7 +453,7 @@ export function DashboardShell({ appointments }: DashboardShellProps) {
             </div>
           </SectionCard>
         </motion.section>
-
+        </div>
       </div>
 
       <AppointmentDetailSheet
